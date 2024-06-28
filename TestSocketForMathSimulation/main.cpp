@@ -3,8 +3,10 @@
 #include"socketFunctions.h"
 #include <winsock2.h>
 #include <vector>
+#include <string>
 
 int main() {
+
     init_socket();
     int sockfd = create_socket();
     if (sockfd == -1) {
@@ -59,71 +61,87 @@ int main() {
     frame.command = CommCommand::CONFIG_DATA;
     int length = 2;
     frame.length = length;
+    strcpy(frame.task_folder, "D:/705/test/task_1");
+    std::string str(frame.task_folder);
+    std::cout << str << std::endl;
     send_frame(sockfd, reinterpret_cast<char*>(&frame), sizeof(Frame));
-    for (int i = 1; i < length+1; i++)
+    recv_data(sockfd, reinterpret_cast<char*>(&frame), sizeof(Frame));
+    if (frame.command == CommCommand::YES)
     {
+        for (int i = 1; i < length + 1; i++)
+        {
 
-        //初始化各个结构体  测试用
-        std::vector<TorFireParmINValue> TorFireParmINValueVector(i,torFireParmINValue);
-      
-        std::vector<TorPluseInValue> TorPluseInValueVector(i+1, torPluseInValue);
-        
-        std::vector<BJInitSet> BJInitSetVector(i+2, bjInitSet);
-       
-        std::vector<ToSonarInitValue> ToSonarInitValueVector(i, toSonarInitValue);
-       
-        std::vector<DecoyParm> DecoyParmVector(i, decoyParm);
-        
-        std::vector<JammerParm> JammerParmVector(i, jammerParm);
-        
-        std::vector<Shipborn_AEJ_Parm> Shipborn_AEJ_ParmVector(i, shipborn_AEJ_Parm);
-        
-        std::vector<CJ_Parm> CJ_ParmVector(i, cj_Parm);
-        
-        std::vector<CR_Parm> CR_ParmVector(i, cr_Parm);
-        
-        std::vector<OutBoard_AEB_Parm> OutBoard_AEB_ParmVector(i, outBoard_AEB_Parm);
-        
-        std::vector<SetSSGRParm> SetSSGRParmVector(i, setSSGRParm);
-        
-        std::vector<SetDCGRParm> SetDCGRParmVector(i, setDCGRParm);
-       
-        std::vector<SetTarChangeParm> SetTarChangeParmVector(i*2, setTarChangeParm);
+            //初始化各个结构体  测试用
+            std::vector<TorFireParmINValue> TorFireParmINValueVector(i, torFireParmINValue);
 
-        //初始化header，标识每个结构体的个数
-        Header header{};
-        header.idx = i - 1;
-        header.TorFireParmINValuelength = TorFireParmINValueVector.size();
-        header.TorPluseInValuelength = TorPluseInValueVector.size();
-        header.BJInitSetlength = BJInitSetVector.size();
-        header.ToSonarInitValuelength = ToSonarInitValueVector.size();
-        header.DecoyParmlength = DecoyParmVector.size();
-        header.JammerParmlength = JammerParmVector.size();
-        header.Shipborn_AEJ_Parmlength = Shipborn_AEJ_ParmVector.size();
-        header.CJ_Parmlength = CJ_ParmVector.size();
-        header.CR_Parmlength = CR_ParmVector.size();
-        header.OutBoard_AEB_Parmlength = OutBoard_AEB_ParmVector.size();
-        header.SetSSGRParmlength = SetSSGRParmVector.size();
-        header.SetDCGRParmlength = SetDCGRParmVector.size();
-        header.SetTarChangeParmlength = SetTarChangeParmVector.size();
-        //发送header帧
-        send_frame(sockfd, reinterpret_cast<char*>(&header), sizeof(Header));
-        //顺序发送各个结构体vector的数据，注意是.data(),不能取地址为&vector
-        send_frame(sockfd, reinterpret_cast<char*>(TorFireParmINValueVector.data()), TorFireParmINValueVector.size() * sizeof(TorFireParmINValue));
-        send_frame(sockfd, reinterpret_cast<char*>(TorPluseInValueVector.data()), TorPluseInValueVector.size() * sizeof(TorPluseInValue));
-        send_frame(sockfd, reinterpret_cast<char*>(BJInitSetVector.data()), BJInitSetVector.size() * sizeof(BJInitSet));
-        send_frame(sockfd, reinterpret_cast<char*>(ToSonarInitValueVector.data()), ToSonarInitValueVector.size() * sizeof(ToSonarInitValue));
-        send_frame(sockfd, reinterpret_cast<char*>(DecoyParmVector.data()), DecoyParmVector.size() * sizeof(DecoyParm));
-        send_frame(sockfd, reinterpret_cast<char*>(JammerParmVector.data()), JammerParmVector.size() * sizeof(JammerParm));
-        send_frame(sockfd, reinterpret_cast<char*>(Shipborn_AEJ_ParmVector.data()), Shipborn_AEJ_ParmVector.size() * sizeof(Shipborn_AEJ_Parm));
-        send_frame(sockfd, reinterpret_cast<char*>(CJ_ParmVector.data()), CJ_ParmVector.size() * sizeof(CJ_Parm));
-        send_frame(sockfd, reinterpret_cast<char*>(CR_ParmVector.data()), CR_ParmVector.size() * sizeof(CR_Parm));
-        send_frame(sockfd, reinterpret_cast<char*>(OutBoard_AEB_ParmVector.data()), OutBoard_AEB_ParmVector.size() * sizeof(OutBoard_AEB_Parm));
-        send_frame(sockfd, reinterpret_cast<char*>(SetSSGRParmVector.data()), SetSSGRParmVector.size() * sizeof(SetSSGRParm));
-        send_frame(sockfd, reinterpret_cast<char*>(SetDCGRParmVector.data()), SetDCGRParmVector.size() * sizeof(SetDCGRParm));
-        send_frame(sockfd, reinterpret_cast<char*>(SetTarChangeParmVector.data()), SetTarChangeParmVector.size() * sizeof(SetTarChangeParm));
+            std::vector<TorPluseInValue> TorPluseInValueVector(i + 1, torPluseInValue);
 
+            std::vector<BJInitSet> BJInitSetVector(i + 2, bjInitSet);
+
+            std::vector<ToSonarInitValue> ToSonarInitValueVector(i, toSonarInitValue);
+
+            std::vector<DecoyParm> DecoyParmVector(i, decoyParm);
+
+            std::vector<JammerParm> JammerParmVector(i, jammerParm);
+
+            std::vector<Shipborn_AEJ_Parm> Shipborn_AEJ_ParmVector(i, shipborn_AEJ_Parm);
+
+            std::vector<CJ_Parm> CJ_ParmVector(i, cj_Parm);
+
+            std::vector<CR_Parm> CR_ParmVector(i, cr_Parm);
+
+            std::vector<OutBoard_AEB_Parm> OutBoard_AEB_ParmVector(i, outBoard_AEB_Parm);
+
+            std::vector<SetSSGRParm> SetSSGRParmVector(i, setSSGRParm);
+
+            std::vector<SetDCGRParm> SetDCGRParmVector(i, setDCGRParm);
+
+            std::vector<SetTarChangeParm> SetTarChangeParmVector(i * 2, setTarChangeParm);
+
+            //初始化header，标识每个结构体的个数
+            Header header{};
+            header.gk_num = 1;
+            header.xd_num = 2;
+            header.gk_idx = 0;
+            header.xd_idx = i - 1;
+            header.TorFireParmINValuelength = TorFireParmINValueVector.size();
+            header.TorPluseInValuelength = TorPluseInValueVector.size();
+            header.BJInitSetlength = BJInitSetVector.size();
+            header.ToSonarInitValuelength = ToSonarInitValueVector.size();
+            header.DecoyParmlength = DecoyParmVector.size();
+            header.JammerParmlength = JammerParmVector.size();
+            header.Shipborn_AEJ_Parmlength = Shipborn_AEJ_ParmVector.size();
+            header.CJ_Parmlength = CJ_ParmVector.size();
+            header.CR_Parmlength = CR_ParmVector.size();
+            header.OutBoard_AEB_Parmlength = OutBoard_AEB_ParmVector.size();
+            header.SetSSGRParmlength = SetSSGRParmVector.size();
+            header.SetDCGRParmlength = SetDCGRParmVector.size();
+            header.SetTarChangeParmlength = SetTarChangeParmVector.size();
+            //发送header帧
+            send_frame(sockfd, reinterpret_cast<char*>(&header), sizeof(Header));
+            //顺序发送各个结构体vector的数据，注意是.data(),不能取地址为&vector
+            send_frame(sockfd, reinterpret_cast<char*>(TorFireParmINValueVector.data()), TorFireParmINValueVector.size() * sizeof(TorFireParmINValue));
+            send_frame(sockfd, reinterpret_cast<char*>(TorPluseInValueVector.data()), TorPluseInValueVector.size() * sizeof(TorPluseInValue));
+            send_frame(sockfd, reinterpret_cast<char*>(BJInitSetVector.data()), BJInitSetVector.size() * sizeof(BJInitSet));
+            send_frame(sockfd, reinterpret_cast<char*>(ToSonarInitValueVector.data()), ToSonarInitValueVector.size() * sizeof(ToSonarInitValue));
+            send_frame(sockfd, reinterpret_cast<char*>(DecoyParmVector.data()), DecoyParmVector.size() * sizeof(DecoyParm));
+            send_frame(sockfd, reinterpret_cast<char*>(JammerParmVector.data()), JammerParmVector.size() * sizeof(JammerParm));
+            send_frame(sockfd, reinterpret_cast<char*>(Shipborn_AEJ_ParmVector.data()), Shipborn_AEJ_ParmVector.size() * sizeof(Shipborn_AEJ_Parm));
+            send_frame(sockfd, reinterpret_cast<char*>(CJ_ParmVector.data()), CJ_ParmVector.size() * sizeof(CJ_Parm));
+            send_frame(sockfd, reinterpret_cast<char*>(CR_ParmVector.data()), CR_ParmVector.size() * sizeof(CR_Parm));
+            send_frame(sockfd, reinterpret_cast<char*>(OutBoard_AEB_ParmVector.data()), OutBoard_AEB_ParmVector.size() * sizeof(OutBoard_AEB_Parm));
+            send_frame(sockfd, reinterpret_cast<char*>(SetSSGRParmVector.data()), SetSSGRParmVector.size() * sizeof(SetSSGRParm));
+            send_frame(sockfd, reinterpret_cast<char*>(SetDCGRParmVector.data()), SetDCGRParmVector.size() * sizeof(SetDCGRParm));
+            send_frame(sockfd, reinterpret_cast<char*>(SetTarChangeParmVector.data()), SetTarChangeParmVector.size() * sizeof(SetTarChangeParm));
+
+        }
     }
+    
+
+
+
+    frame.command = CommCommand::CALCU;
+    send_frame(sockfd, reinterpret_cast<char*>(&frame), sizeof(frame));
 
     CloseSocket(sockfd);
 

@@ -1,27 +1,20 @@
-﻿#ifndef SIM_LIB_H
+﻿/*Create by Hao Li,20240626*/
+//此头文件定义了仿真的输入参数和输出参数
+//包括使用boost序列化代码
+#ifndef SIM_LIB_H
 #define SIM_LIB_H
 
-#define CONFIG_TYPE_NUMS 2
-#define CONFIG_INT_NUMS 2
-#define CONFIG_FLOAT_NUMS 11
-//#define CONFIG_CHAR_NUMS 20
-#define RESULT_TYPE_NUMS 2
-#define RESULT_INT_NUMS 6
-#define RESULT_FLOAT_NUMS 6
-//#define RESULT_CHAR_NUMS 20
 #include <iostream>
 #include <sstream>
+#include <mutex>
 #include <iostream>
-#include <type_traits>
-#include <utility> 
 #include <vector>
-// for std::forward
-//#include <boost/archive/text_oarchive.hpp>
-//#include <boost/archive/text_iarchive.hpp>
-//#include <boost/serialization/utility.hpp>
-//#include <boost/serialization/serialization.hpp>
+
+#include "comm.h"//这里定义了Serverstatus
 
 //#include "ZDTest.h"//这里包含了sim_run
+
+
 //从进程的状态
 enum class ProcStatus
 {
@@ -33,14 +26,6 @@ enum class ProcStatus
 };
 
 
-//仿真输入参数
-struct ConfigStruct
-{
-	ProcStatus command;
-	int idx;
-	//int arg_int[3];//用户仿真模型的输入
-	float arg[11];
-};
 
 
 struct ResultStruct
@@ -76,6 +61,7 @@ struct FinalResultStruct//最终的结果结构体，根据Result判读得到
 	double Tt;
 
 };
+
 
 //--------------------鱼雷初始设定参数（由水下平台发给鱼雷）-----------------------//
 typedef struct
@@ -161,6 +147,8 @@ typedef struct
 	double  Pn;                         // 声源级
 	double  LspTsL[5];                   // 目标水平亮点强度
 	double  LspTsA[5];                   // 目标垂直亮点强度
+	//double  Pnf_S;                      // 起始频率
+	//double  Pnf_E;                      // 截至频率高 新版接口删除
 	double  Length;					    // 舰船长度
 	double	Width;					    // 舰船宽度
 	double	WidthTail;			     	// 尾部宽度
@@ -194,7 +182,7 @@ typedef struct
 //水声对抗干扰
 typedef struct          //诱饵干扰器参数
 {
-	long     entityID;	       // 真实批号
+	int     entityID;	       // 真实批号
 	int    Tar_sign;                 //目标标志, 0-点诱饵，1-线诱饵 2-体诱饵，3-真实水面目标，4-真实水下目标，5-水面目标+尾流，6-尾流
 	int      flageDecoy;      // 诱饵有效标志位,0:无效 1：有效
 	int      DecoyAct;        // 回波有效，即可被鱼雷检测
@@ -234,7 +222,7 @@ typedef struct          //诱饵干扰器参数
 
 typedef struct              //噪声干扰器
 {
-	long     entityID;       // 真实批号
+	int     entityID;       // 真实批号
 	double   SPL;            // 噪声干扰器辐射谱级
 	double   tDUJammer;      // 干扰器有效工作总时长（重要性能参数）
 	double   POSJammer[3];   // 当前仿真时刻干扰器位置信息
@@ -258,7 +246,7 @@ typedef struct
 	double  DJy;			  // 大地坐标系，Y轴
 	double  DJz;			  // 高度或深度，0为海平面，深度为负数
 
-  /*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
+	/*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
 	double  DJ_Tar_Dis; //释放干扰与目标相对距离
 	double  DJ_Tar_Angle;//释放干扰与目标航向之间的夹角，左-，右+，0-180
 
@@ -284,7 +272,7 @@ typedef struct
 	double  DJy;			  // 大地坐标系，Y轴
 	double  DJz;			  // 高度或深度，0为海平面，深度为负数
 
-  /*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
+	/*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
 	double  DJ_Tar_Dis; //释放干扰与目标相对距离
 	double  DJ_Tar_Angle;//释放干扰与目标航向之间的夹角，左-，右+，0-180
 
@@ -308,7 +296,7 @@ typedef struct
 	double  DJy;			  // 大地坐标系，Y轴
 	double  DJz;			  // 高度或深度，0为海平面，深度为负数
 
-  /*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
+	/*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
 	double  DJ_Tar_Dis; //释放干扰与目标相对距离
 	double  DJ_Tar_Angle;//释放干扰与目标航向之间的夹角，左-，右+，0-180
 
@@ -332,7 +320,7 @@ typedef struct
 	double  DJy;			  // 大地坐标系，Y轴,约100米
 	double  DJz;			  // 高度或深度，0为海平面，深度为负数
 
-  /*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
+	/*设计两种布放方式，2.给出电磁干扰相对目标的布放距离和方位*/
 	double  DJ_Tar_Dis; //释放干扰与目标相对距离
 	double  DJ_Tar_Angle;//释放干扰与目标航向之间的夹角，左-，右+，0-180
 
@@ -346,7 +334,7 @@ typedef struct
 
 //布放策略接口信息
 typedef struct              //水声干扰器布放策略接口信息
-{
+{//新版接口
 	int    number1;               //目标个数，最多两个
 	int    TarID[2];	             //目标真实批号
 	int    number2;               //鱼雷个数，最多两个
@@ -364,9 +352,9 @@ typedef struct              //水声干扰器布放策略接口信息
 }SetSSGRParm;
 
 
-
-typedef struct              //电磁布放策略接口信息
-{
+//电磁布放策略接口信息
+typedef struct
+{//新版接口
 	int    number1;               //目标个数，最多两个
 	int    TarID[2];	             //目标真实批号
 	int    number2;               //无人机个数，最多两个
@@ -380,252 +368,31 @@ typedef struct              //电磁布放策略接口信息
 	double Tarspeed[2];           //目标速度
 	double WRJpos[6];            //无人机位置
 	double WRJpsi[2];             //无人机航向角
+	double TorVog[2];            //鱼雷航程
 }SetDCGRParm;
 
-
-typedef struct              //目标转向机动规避策略接口信息，
-{
+//目标转向机动规避策略接口信息，
+typedef struct
+{//新版接口
 	int    number1;               //目标个数，最多两个
 	int    TarID[2];	             //目标真实批号
 	int    number2;               //鱼雷个数，最多两个
 	int    TorID[2];	                // 鱼雷真实批号
-
-	double settime[4];            //目标变速变航向设定时间，0~1：目标1信息，2~3：目标2信息
+	double flextime[4];		   //目标变速变航向设定时机，0~1：目标1信息，2~3：目标2信息	
+	double flexpsi[2];            //目标转向角，0：目标1信息，1：目标2信息
+	double flexspeed[4];          //目标机动速度，0~1：目标1变速信息，2~3：目标2变速信息
+	//double settime[4];            //目标变速变航向设定时间，0~1：目标1信息，2~3：目标2信息
+	double AngVelocity[2];        //目标转向角速度，0：目标1信息，1：目标2信息
 	double Tarpos[6];             //目标位置
 	double Tarpsi[2];             //目标航向角
 	double Tarspeed[4];           //目标速度，0~1：目标1变速信息，2~3：目标2变速信息
-	double TarAngVelocity[2];     //目标转向角速度，0：目标1信息，1：目标2信息
+	//double TarAngVelocity[2];     //目标转向角速度，0：目标1信息，1：目标2信息
 	double Torpos[6];             //鱼雷位置
 	double Torpsi[2];             //鱼雷航向角
 	double Torspeed[2];           //鱼雷速度
 }SetTarChangeParm;
 
 
-//class TaskInfo {
-//public:
-//	TaskInfo() {};
-//	TaskInfo(int idx,std::vector<TorFireParmINValue> &TorFireParmINValue, std::vector<TorPluseInValue> &TorPluseInValue, std::vector<BJInitSet> BJInitSet
-//	, std::vector<ToSonarInitValue> ToSonarInitValue, std::vector<DecoyParm> DecoyParm, std::vector<JammerParm> JammerParm,std::vector<Shipborn_AEJ_Parm> Shipborn_AEJ_Parm,
-//	std::vector<CJ_Parm> CJ_Parm, std::vector<CR_Parm> CR_Parm, std::vector<OutBoard_AEB_Parm> OutBoard_AEB_Parm, std::vector<SetSSGRParm> SetSSGRParm,
-//	std::vector<SetDCGRParm> SetDCGRParm, std::vector<SetTarChangeParm> SetTarChangeParm)
-//		:_idx(idx),_TorFireParmINValue(TorFireParmINValue), _TorPluseInValue(TorPluseInValue) , _BJInitSet(BJInitSet), _ToSonarInitValue(ToSonarInitValue),
-//		_DecoyParm(DecoyParm),_JammerParm(JammerParm),_Shipborn_AEJ_Parm(Shipborn_AEJ_Parm), _CJ_Parm(CJ_Parm),_CR_Parm(CR_Parm),_OutBoard_AEB_Parm(OutBoard_AEB_Parm),
-//		_SetSSGRParm(SetSSGRParm),_SetDCGRParm(SetDCGRParm),_SetTarChangeParm(SetTarChangeParm){}
-//	int get_idx() const { return _idx; }
-//	const std::vector<TorFireParmINValue>&  get_TorFireParmINValue() const { return _TorFireParmINValue; }
-//	const std::vector<TorPluseInValue>&  get_TorPluseInValue() const { return _TorPluseInValue; }
-//	const std::vector<BJInitSet>& 
-//	const std::vector<ToSonarInitValue>&
-//	const	std::vector<DecoyParm>&
-//		const	std::vector<JammerParm>&
-//		const	std::vector<Shipborn_AEJ_Parm>&
-//		const	std::vector<CJ_Parm>&
-//		const	std::vector<CR_Parm>&
-//		const	std::vector<OutBoard_AEB_Parm>&
-//		const	std::vector<SetSSGRParm>&
-//		const	std::vector<SetDCGRParm>&
-//		const	std::vector<SetTarChangeParm>&
-//private:
-//	friend class boost::serialization::access;
-//	template<class Archive>
-//	void serialize(Archive& ar, const unsigned int version) {
-//		ar & final_result & result_vector &idx;
-//	}
-//	int _idx;
-//	std::vector<TorFireParmINValue> _TorFireParmINValue;
-//	std::vector<TorPluseInValue> _TorPluseInValue;
-//	std::vector<BJInitSet> _BJInitSet;
-//	std::vector<ToSonarInitValue> _ToSonarInitValue;
-//	std::vector<DecoyParm> _DecoyParm;
-//	std::vector<JammerParm> _JammerParm;
-//	std::vector<Shipborn_AEJ_Parm> _Shipborn_AEJ_Parm;
-//	std::vector<CJ_Parm> _CJ_Parm;
-//	std::vector<CR_Parm> _CR_Parm;
-//	std::vector<OutBoard_AEB_Parm> _OutBoard_AEB_Parm;
-//	std::vector<SetSSGRParm> _SetSSGRParm;
-//	std::vector<SetDCGRParm> _SetDCGRParm;
-//	std::vector<SetTarChangeParm> _SetTarChangeParm;
-//};
 
-
-
-class TaskInfo {
-public:
-	int idx;
-
-	std::vector<TorFireParmINValue> torFireParmINValues;
-	std::vector<TorPluseInValue> torPluseInValues;
-	std::vector<BJInitSet> bjInitSets;
-	std::vector<ToSonarInitValue> toSonarInitValues;
-	std::vector<DecoyParm> decoyParms;
-	std::vector<JammerParm> jammerParms;
-	std::vector<Shipborn_AEJ_Parm> shipbornAEJParms;
-	std::vector<CJ_Parm> cjParms;
-	std::vector<CR_Parm> crParms;
-	std::vector<OutBoard_AEB_Parm> outBoardAEBParms;
-	std::vector<SetSSGRParm> setSSGRParms;
-	std::vector<SetDCGRParm> setDCGRParms;
-	std::vector<SetTarChangeParm> setTarChangeParms;
-
-	// 默认构造函数
-	TaskInfo() : idx(0) {}
-
-	// 可变参数模板构造函数，用于初始化成员变量
-	template<typename... Vectors>
-	TaskInfo(int idxValue, Vectors&&... vectors) : idx(idxValue) { //这里考虑的是可能传入不等长度的vector
-		assignVectors(std::forward<Vectors>(vectors)...);
-	}
-
-	// 拷贝构造函数，同时拷贝idx和所有vector成员
-	TaskInfo(const TaskInfo& other)
-		: idx(other.idx),
-		torFireParmINValues(other.torFireParmINValues),
-		torPluseInValues(other.torPluseInValues),
-		bjInitSets(other.bjInitSets),
-		toSonarInitValues(other.toSonarInitValues),
-		decoyParms(other.decoyParms),
-		jammerParms(other.jammerParms),
-		shipbornAEJParms(other.shipbornAEJParms),
-		cjParms(other.cjParms),
-		crParms(other.crParms),
-		outBoardAEBParms(other.outBoardAEBParms),
-		setSSGRParms(other.setSSGRParms),
-		setDCGRParms(other.setDCGRParms),
-		setTarChangeParms(other.setTarChangeParms) {
-	}
-
-	//// 序列化函数
-	//template<class Archive>
-	//void serialize(Archive& ar, const unsigned int version) {
-	//	ar & idx;
-	//	ar & torFireParmINValues;
-	//	ar & torPluseInValues;
-	//	ar & bjInitSets;
-	//	ar & toSonarInitValues;
-	//	ar & decoyParms;
-	//	ar & jammerParms;
-	//	ar & shipbornAEJParms;
-	//	ar & cjParms;
-	//	ar & crParms;
-	//	ar & outBoardAEBParms;
-	//	ar & setSSGRParms;
-	//	ar & setDCGRParms;
-	//	ar & setTarChangeParms;
-	//}
-
-private:
-	// 递归终止函数
-	void assignVectors() {}
-
-	// 递归展开处理每个传入的vector
-	template<typename T, typename... Vectors>
-	void assignVectors(T&& vector, Vectors&&... vectors) {
-		assignVector(std::forward<T>(vector));
-		assignVectors(std::forward<Vectors>(vectors)...);
-	}
-
-	// 根据vector的类型赋值给相应的成员
-	template<typename VectorType>
-	void assignVector(VectorType&& vector) {
-		assignVectorImpl(std::forward<VectorType>(vector), typename std::decay<VectorType>::type());
-	}
-
-	// 用于不同类型vector的特化函数，使用std::is_same在编译时判断类型
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<TorFireParmINValue>) {
-		torFireParmINValues = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<TorPluseInValue>) {
-		torPluseInValues = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<BJInitSet>) {
-		bjInitSets = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<ToSonarInitValue>) {
-		toSonarInitValues = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<DecoyParm>) {
-		decoyParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<JammerParm>) {
-		jammerParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<Shipborn_AEJ_Parm>) {
-		shipbornAEJParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<CJ_Parm>) {
-		cjParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<CR_Parm>) {
-		crParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<OutBoard_AEB_Parm>) {
-		outBoardAEBParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<SetSSGRParm>) {
-		setSSGRParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<SetDCGRParm>) {
-		setDCGRParms = std::forward<VectorType>(vector);
-	}
-
-	template<typename VectorType>
-	void assignVectorImpl(VectorType&& vector, std::vector<SetTarChangeParm>) {
-		setTarChangeParms = std::forward<VectorType>(vector);
-	}
-
-	// 避免匹配失败的编译错误
-	template<typename T>
-	struct always_false : std::false_type {};
-
-	template<typename VectorType, typename U>
-	void assignVectorImpl(VectorType&& vector, U) {
-		static_assert(always_false<U>::value, "Type mismatch in TaskInfo constructor");
-	}
-};
-
-
-
-
-//namespace boost {
-//	namespace serialization {
-//
-//		template<class Archive>
-//		void serialize(Archive& ar, TorFireParmINValue& to, const unsigned int version) {
-//			ar & to.ELR;
-//			ar & to.EM_YSD;
-//			ar & to.entityID;
-//			ar & to.FirstPsin;
-//			ar & to.FRTAP;
-//			ar & to.FYinXinPV;
-//			ar & to.Guidedistance;
-//			ar & to.GX;
-//			ar & to.HC;
-//		}
-//
-//	} // namespace serialization
-//} // namespace boost
 
 #endif // !SIM_LIB_H

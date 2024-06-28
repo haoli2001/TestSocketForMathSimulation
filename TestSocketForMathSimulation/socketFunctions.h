@@ -21,7 +21,7 @@
 		0: 对端关闭连接
 备注：阻塞函数
 ***************************/
-int recv_data(int socket, char *d_p, int length, std::atomic<int>& aliveSignal);
+int recv_data(int socket, char *d_p, int length);
 
 /**************************
 名称：int send_frame(int socket, char *d_p, int length);

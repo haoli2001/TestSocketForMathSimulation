@@ -44,7 +44,7 @@
 
 #define BACKLOG 5 
 #include <iostream>
-int recv_data(int socket, char* buffer, int length, std::atomic<int>& aliveSignal) {
+int recv_data(int socket, char* buffer, int length) {
 	int total_received = 0;
 #ifdef _WINDOWS_
 	u_long mode = 1;
@@ -56,7 +56,7 @@ int recv_data(int socket, char* buffer, int length, std::atomic<int>& aliveSigna
 	}
 #endif
 	while (total_received < length) {
-		aliveSignal = 1;
+
 		int bytes_received = recv(socket, buffer + total_received, length - total_received, 0);
 		if (bytes_received == -1) {
 			// 接收发生错误

@@ -71,7 +71,10 @@ struct ConfigInfo
 
 struct Header
 {
-	int idx;
+	int gk_num;//工况总数目
+	int xd_num;//想定总数目
+	int gk_idx;//工况索引
+	int xd_idx;//想定索引
 	int TorFireParmINValuelength;//每个结构体的个数
 	int TorPluseInValuelength;
 	int BJInitSetlength;
