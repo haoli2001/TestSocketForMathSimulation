@@ -128,7 +128,9 @@ int create_socket()
 	
 	sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	
-	ret = setsockopt( sockfd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+	//ret = setsockopt( sockfd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+	int nodelay = 1;
+	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (const char*)&nodelay, sizeof(nodelay));
 	
 	if (sockfd == INVALID_SOCKET)
 	{

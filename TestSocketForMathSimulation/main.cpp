@@ -59,7 +59,7 @@ int main() {
     setTarChangeParm.number1 = 2;
     Frame frame{};
     frame.command = CommCommand::CONFIG_DATA;
-    int length = 2;
+    int length = 100;
     frame.length = length;
     strcpy(frame.task_folder, "D:/705/test/task_1");
     std::string str(frame.task_folder);
@@ -72,38 +72,47 @@ int main() {
         {
 
             //初始化各个结构体  测试用
-            std::vector<TorFireParmINValue> TorFireParmINValueVector(i, torFireParmINValue);
+            std::vector<TorFireParmINValue> TorFireParmINValueVector(3, torFireParmINValue);
 
-            std::vector<TorPluseInValue> TorPluseInValueVector(i + 1, torPluseInValue);
+            std::vector<TorPluseInValue> TorPluseInValueVector(3, torPluseInValue);
 
-            std::vector<BJInitSet> BJInitSetVector(i + 2, bjInitSet);
+            std::vector<BJInitSet> BJInitSetVector(2, bjInitSet);
 
-            std::vector<ToSonarInitValue> ToSonarInitValueVector(i, toSonarInitValue);
+            std::vector<ToSonarInitValue> ToSonarInitValueVector(1, toSonarInitValue);
 
-            std::vector<DecoyParm> DecoyParmVector(i, decoyParm);
+            std::vector<DecoyParm> DecoyParmVector(4, decoyParm);
 
-            std::vector<JammerParm> JammerParmVector(i, jammerParm);
+            std::vector<JammerParm> JammerParmVector(12, jammerParm);
 
-            std::vector<Shipborn_AEJ_Parm> Shipborn_AEJ_ParmVector(i, shipborn_AEJ_Parm);
+            std::vector<Shipborn_AEJ_Parm> Shipborn_AEJ_ParmVector(5, shipborn_AEJ_Parm);
 
-            std::vector<CJ_Parm> CJ_ParmVector(i, cj_Parm);
+            std::vector<CJ_Parm> CJ_ParmVector(2, cj_Parm);
 
-            std::vector<CR_Parm> CR_ParmVector(i, cr_Parm);
+            std::vector<CR_Parm> CR_ParmVector(6, cr_Parm);
 
-            std::vector<OutBoard_AEB_Parm> OutBoard_AEB_ParmVector(i, outBoard_AEB_Parm);
+            std::vector<OutBoard_AEB_Parm> OutBoard_AEB_ParmVector(10, outBoard_AEB_Parm);
 
-            std::vector<SetSSGRParm> SetSSGRParmVector(i, setSSGRParm);
+            std::vector<SetSSGRParm> SetSSGRParmVector(2, setSSGRParm);
 
-            std::vector<SetDCGRParm> SetDCGRParmVector(i, setDCGRParm);
+            std::vector<SetDCGRParm> SetDCGRParmVector(1, setDCGRParm);
 
-            std::vector<SetTarChangeParm> SetTarChangeParmVector(i * 2, setTarChangeParm);
+            std::vector<SetTarChangeParm> SetTarChangeParmVector(3 * 2, setTarChangeParm);
 
             //初始化header，标识每个结构体的个数
             Header header{};
-            header.gk_num = 1;
-            header.xd_num = 2;
-            header.gk_idx = 0;
-            header.xd_idx = i - 1;
+            header.gk_num = 2;
+            header.xd_num = length/2;
+            if (i < 51)
+            {
+                header.gk_idx = 0;
+                header.xd_idx = i - 1;
+            }
+            else
+            {
+                header.gk_idx = 2;
+                header.xd_idx = i - 51;
+            }
+            
             header.TorFireParmINValuelength = TorFireParmINValueVector.size();
             header.TorPluseInValuelength = TorPluseInValueVector.size();
             header.BJInitSetlength = BJInitSetVector.size();
@@ -133,7 +142,7 @@ int main() {
             send_frame(sockfd, reinterpret_cast<char*>(SetSSGRParmVector.data()), SetSSGRParmVector.size() * sizeof(SetSSGRParm));
             send_frame(sockfd, reinterpret_cast<char*>(SetDCGRParmVector.data()), SetDCGRParmVector.size() * sizeof(SetDCGRParm));
             send_frame(sockfd, reinterpret_cast<char*>(SetTarChangeParmVector.data()), SetTarChangeParmVector.size() * sizeof(SetTarChangeParm));
-
+            //Sleep(5);
         }
     }
     

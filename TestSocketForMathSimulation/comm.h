@@ -72,7 +72,7 @@ struct ConfigInfo
 struct Header
 {
 	int gk_num;//工况总数目
-	int xd_num;//想定总数目
+	int xd_num;//当前发送任务的工况条次的想定总数目
 	int gk_idx;//工况索引
 	int xd_idx;//想定索引
 	int TorFireParmINValuelength;//每个结构体的个数
@@ -89,6 +89,7 @@ struct Header
 	int SetDCGRParmlength;
 	int SetTarChangeParmlength;
 };
+
 
 //char data[1024];
 
